@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils"
+'use client'
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -9,11 +9,43 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { cn } from "@/lib/utils"
+import { signIn } from 'next-auth/react'
+import { useState } from "react"
+
+type FormData = {
+  email: string;
+  password: string;
+};
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<"div">) {
+  const [formData, setFormData] = useState<FormData>({
+    email: 'test@test.com',
+    password: 'password',
+  });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+  };
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault(); // Prevents the default form submission behavior
+    console.log('Form Data Submitted:', formData);
+    signIn('credentials', {
+        email: formData.email,
+        password: formData.password,
+        callbackUrl: '/'
+      })
+  };
+
+
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
@@ -24,7 +56,7 @@ export function LoginForm({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form>
+          <form onSubmit={handleSubmit}>
             <div className="flex flex-col gap-6">
               <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
@@ -33,6 +65,8 @@ export function LoginForm({
                   type="email"
                   placeholder="m@example.com"
                   required
+                  defaultValue={formData.email}
+                  onChange={handleChange}
                 />
               </div>
               <div className="grid gap-2">
@@ -45,7 +79,7 @@ export function LoginForm({
                     Forgot your password?
                   </a>
                 </div>
-                <Input id="password" type="password" required />
+                <Input id="password" type="password" required onChange={handleChange} defaultValue={formData.password}/>
               </div>
               <Button type="submit" className="w-full">
                 Login
