@@ -41,7 +41,7 @@ export function LoginForm({
     signIn('credentials', {
         email: formData.email,
         password: formData.password,
-        callbackUrl: '/'
+        callbackUrl: '/dashboard',
       })
   };
 
