@@ -1,5 +1,6 @@
 import type { NextAuthConfig } from "next-auth";
 import CredentialProvider from 'next-auth/providers/credentials';
+import prisma from "./prisma";
 
 export const authConfig = {
   providers: [
@@ -13,14 +14,13 @@ export const authConfig = {
         }
       },
       async authorize(credentials, req) {
-        const user = {
-          id: '1',
-          name: 'John',
-          email: credentials?.email as string
-        };
+        const user = await prisma.user.findFirst();
         if (user) {
           // Any object returned will be saved in `user` property of the JWT
-          return user;
+          return {
+            ...user,
+            id: user.id.toString()
+          };
         } else {
           // If you return null then an error will be displayed advising the user to check their details.
           return null;
