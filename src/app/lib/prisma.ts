@@ -1,9 +1,27 @@
 import { PrismaClient } from "@prisma/client";
 
-const globalForPrisma = global as unknown as { prisma: PrismaClient };
+function createExtendedPrismaClient() {
+  return new PrismaClient().$extends({
+    result: {
+      user: {
+        fullName: {
+          // the dependencies
+          needs: { firstName: true, lastName: true },
+          compute(user) {
+            // the computation logic
+            return `${user.firstName} ${user.lastName}`
+          },
+        },
+      },
+    }
+  })
+}
 
-export const prisma =
-  globalForPrisma.prisma || new PrismaClient();
+type ExtendedPrismaClient = ReturnType<typeof createExtendedPrismaClient>;
+
+const globalForPrisma = global as unknown as { prisma: ExtendedPrismaClient };
+
+export const prisma = globalForPrisma.prisma || createExtendedPrismaClient();
 
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
 
